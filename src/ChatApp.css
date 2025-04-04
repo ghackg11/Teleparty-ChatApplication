@@ -89,6 +89,18 @@
   align-items: center;
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .chat-header h2 {
   color: #2d3436;
   font-size: 18px;
@@ -113,6 +125,63 @@
 
 .leave-button:hover {
   background-color: #e2e8f0;
+}
+
+.user-list-container {
+  position: relative;
+}
+
+.user-list-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-list-button:hover {
+  background-color: #f1f5f9;
+}
+
+.user-list-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  min-width: 200px;
+  z-index: 100;
+}
+
+.user-list-dropdown h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.user-list-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.user-list-dropdown li {
+  padding: 8px 0;
+  color: #2d3436;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.user-list-dropdown li:last-child {
+  border-bottom: none;
 }
 
 .chat-messages {

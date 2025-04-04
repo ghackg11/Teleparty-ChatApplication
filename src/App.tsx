@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TelepartyClient, SocketEventHandler, SocketMessageTypes } from 'teleparty-websocket-lib';
 import './ChatApp.css';
 
@@ -17,7 +17,24 @@ const App: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [users, setUsers] = useState<string[]>([]);
+  const [showUserList, setShowUserList] = useState<boolean>(false);
+  const userListRef = useRef<HTMLDivElement>(null);
   const clientRef = React.useRef<TelepartyClient | null>(null);
+
+  // Add click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userListRef.current && !userListRef.current.contains(event.target as Node)) {
+        setShowUserList(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Initialize WebSocket client
   useEffect(() => {
@@ -27,9 +44,17 @@ const App: React.FC = () => {
           if (data.type === SocketMessageTypes.SEND_MESSAGE) {
             const messageData = data.data || {};
             if (messageData.isSystemMessage) {
+              const messageContent = messageData.body || messageData.message || '';
+              const isJoinMessage = messageContent.includes('joined');
+              const isLeaveMessage = messageContent.includes('left');
+              
               const newMessage = {
-                sender: messageData.userNickname || 'Unknown',
-                content: messageData.body || messageData.message || '',
+                sender: 'System',
+                content: isJoinMessage ? 
+                  `${messageData.userNickname || 'Unknown'} joined the party` :
+                  isLeaveMessage ?
+                  `${messageData.userNickname || 'Unknown'} left the party` :
+                  messageContent,
                 timestamp: new Date(messageData.timestamp || Date.now()),
                 isSystem: true
               };
@@ -54,15 +79,9 @@ const App: React.FC = () => {
               setMessages(prev => [...prev, ...formattedMessages]);
             }
           } else if (data.type === 'userList') {
-            const users = data.data || [];
-            const userNames = users.map((user: any) => user.userSettings?.userNickname || 'Unknown').join(', ');
-            const systemMessage = {
-              sender: 'System',
-              content: `Users in room: ${userNames}`,
-              timestamp: new Date(),
-              isSystem: true
-            };
-            setMessages(prev => [...prev, systemMessage]);
+            const userList = data.data || [];
+            const userNames = userList.map((user: any) => user.userSettings?.userNickname || 'Unknown');
+            setUsers(userNames);
           }
         } catch (error) {
           console.error('Error processing message:', error);
@@ -132,15 +151,25 @@ const App: React.FC = () => {
   const leaveRoom = async () => {
     if (clientRef.current) {
       try {
+        // Add system message for leaving
+        setMessages(prev => [...prev, {
+          sender: 'System',
+          content: `${nickname} left the party`,
+          timestamp: new Date(),
+          isSystem: true
+        }]);
+        
         // Tear down the current client
         clientRef.current.teardown();
         clientRef.current = null;
         setClient(null);
         
-        // Reset local state
+        // Reset all state
         setRoomId('');
         setRoomIdInput('');
+        setNickname('');
         setMessages([]);
+        setUsers([]);
         setIsConnecting(false);
 
         // Reinitialize the client
@@ -150,9 +179,17 @@ const App: React.FC = () => {
               if (data.type === SocketMessageTypes.SEND_MESSAGE) {
                 const messageData = data.data || {};
                 if (messageData.isSystemMessage) {
+                  const messageContent = messageData.body || messageData.message || '';
+                  const isJoinMessage = messageContent.includes('joined');
+                  const isLeaveMessage = messageContent.includes('left');
+                  
                   const newMessage = {
-                    sender: messageData.userNickname || 'Unknown',
-                    content: messageData.body || messageData.message || '',
+                    sender: 'System',
+                    content: isJoinMessage ? 
+                      `${messageData.userNickname || 'Unknown'} joined the party` :
+                      isLeaveMessage ?
+                      `${messageData.userNickname || 'Unknown'} left the party` :
+                      messageContent,
                     timestamp: new Date(messageData.timestamp || Date.now()),
                     isSystem: true
                   };
@@ -177,15 +214,9 @@ const App: React.FC = () => {
                   setMessages(prev => [...prev, ...formattedMessages]);
                 }
               } else if (data.type === 'userList') {
-                const users = data.data || [];
-                const userNames = users.map((user: any) => user.userSettings?.userNickname || 'Unknown').join(', ');
-                const systemMessage = {
-                  sender: 'System',
-                  content: `Users in room: ${userNames}`,
-                  timestamp: new Date(),
-                  isSystem: true
-                };
-                setMessages(prev => [...prev, systemMessage]);
+                const userList = data.data || [];
+                const userNames = userList.map((user: any) => user.userSettings?.userNickname || 'Unknown');
+                setUsers(userNames);
               }
             } catch (error) {
               console.error('Error processing message:', error);
@@ -204,6 +235,7 @@ const App: React.FC = () => {
         setClient(telepartyClient);
       } catch (error) {
         console.error('Error leaving room:', error);
+        setIsConnecting(false);
       }
     }
   };
@@ -249,11 +281,33 @@ const App: React.FC = () => {
       ) : (
         <div className="chat-room">
           <div className="chat-header">
-            <h2>Chat Room: {roomId}</h2>
-            <p>Nickname: {nickname}</p>
-            <button onClick={leaveRoom} className="leave-button">
-              Leave Room
-            </button>
+            <div className="header-left">
+              <h2>Chat Room: {roomId}</h2>
+              <p>Nickname: {nickname}</p>
+            </div>
+            <div className="header-right">
+              <div className="user-list-container" ref={userListRef}>
+                <button 
+                  className="user-list-button"
+                  onClick={() => setShowUserList(!showUserList)}
+                >
+                  👥
+                </button>
+                {showUserList && (
+                  <div className="user-list-dropdown">
+                    <h3>Users in Room</h3>
+                    <ul>
+                      {users.map((user, index) => (
+                        <li key={index}>{user}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <button onClick={leaveRoom} className="leave-button">
+                Leave Room
+              </button>
+            </div>
           </div>
           <div className="chat-messages">
             {messages.length === 0 ? (
