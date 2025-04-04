@@ -265,7 +265,9 @@ const App: React.FC = () => {
                   className={`message ${msg.sender === nickname ? 'sent' : 'received'} ${msg.isSystem ? 'system' : ''}`}
                 >
                   <div className="message-header">
-                    <span className="sender">{msg.sender}</span>
+                    <span className="sender">
+                      {msg.sender === nickname ? 'You' : msg.sender}
+                    </span>
                     <span className="timestamp">
                       {msg.timestamp.toLocaleTimeString()}
                     </span>
