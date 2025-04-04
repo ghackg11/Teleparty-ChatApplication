@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/static/css/main.d63aba80.css",
-    "main.js": "/static/js/main.3ec84844.js",
-    "static/js/453.5519670e.chunk.js": "/static/js/453.5519670e.chunk.js",
-    "index.html": "/index.html",
-    "main.d63aba80.css.map": "/static/css/main.d63aba80.css.map",
-    "main.3ec84844.js.map": "/static/js/main.3ec84844.js.map",
-    "453.5519670e.chunk.js.map": "/static/js/453.5519670e.chunk.js.map"
+    "main.css": "/Teleparty-ChatApplication/static/css/main.d63aba80.css",
+    "main.js": "/Teleparty-ChatApplication/static/js/main.e643d0aa.js",
+    "static/js/453.5519670e.chunk.js": "/Teleparty-ChatApplication/static/js/453.5519670e.chunk.js",
+    "index.html": "/Teleparty-ChatApplication/index.html",
+    "main.d63aba80.css.map": "/Teleparty-ChatApplication/static/css/main.d63aba80.css.map",
+    "main.e643d0aa.js.map": "/Teleparty-ChatApplication/static/js/main.e643d0aa.js.map",
+    "453.5519670e.chunk.js.map": "/Teleparty-ChatApplication/static/js/453.5519670e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d63aba80.css",
-    "static/js/main.3ec84844.js"
+    "static/js/main.e643d0aa.js"
   ]
 }
